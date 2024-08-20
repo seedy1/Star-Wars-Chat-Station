@@ -47,6 +47,8 @@ class ChatViewController: UIViewController{
                             self.messages.append(Message(sender: msgSender, body: msg))
                             DispatchQueue.main.async {
                                 self.tableView.reloadData()
+                                let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
+                                self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
                             }
                             
                         }
@@ -64,6 +66,9 @@ class ChatViewController: UIViewController{
                     print("FireStore error adding data", e)
                 }else{
                     print("success")
+                    DispatchQueue.main.async {
+                        self.messageTextfield.text = ""
+                    }
                 }
             }
         }
@@ -88,8 +93,25 @@ extension ChatViewController: UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let message = messages[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellIdentifier, for: indexPath) as! MessageCell
-        cell.messageLabel.text = messages[indexPath.row].body
+        cell.messageLabel.text = message.body
+        
+        cell.messagePP.isHidden = true
+        cell.messageFromPP.isHidden = true
+        
+        if message.sender == Auth.auth().currentUser?.email{
+            cell.messagePP.isHidden = false
+            cell.messageFromPP.isHidden = true
+            cell.messageLabel.backgroundColor = .cyan
+            cell.messageLabel.textColor = .white
+        }else{ // other user messages
+            cell.messagePP.isHidden = true
+            cell.messageFromPP.isHidden = false
+            cell.messageLabel.backgroundColor = .gray
+            cell.messageLabel.textColor = .white
+        }
+        
         return cell
     }
 }
